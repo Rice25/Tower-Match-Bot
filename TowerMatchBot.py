@@ -14,8 +14,8 @@ y_pad = 206
 Play area = x_pad+1, y_pad+1, 953, 1319
 """
 
-
-# Globals
+"""
+# Globals for entire game screen
 # ---------------
 
 x_pad = 327
@@ -30,16 +30,32 @@ layerDefault = 536
 # Pixel x positions
 leftPos = 149   # min is 145
 rightPos = 478  # max is 482
+"""
+
+# Globals for reduced area capture
+# -------------------------------
+
+x_pad = 327+144
+y_pad = 206+535
+
+# Pixel y positions
+layer1 = 297
+layer2 = 167
+layer3 = 36
+layerDefault = 1
+
+# Pixel x positions
+leftPos = 6
+rightPos = 331
 
 def screenGrab():
-    box = (x_pad+1, y_pad+1, x_pad+626, y_pad+1113)
+    box = (x_pad+1, y_pad+1, x_pad+339, y_pad+833) # full game screen is x_pad+626, y_pad+1113
     im = ImageGrab.grab(box)
-    #im.save(os.getcwd() + '\\full_snap__' + str(int(time.time())) + '.png', 'PNG')
+    im.save(os.getcwd() + '\\full_snap__' + str(int(time.time())) + '.png', 'PNG')
     return im
 
 def leftClick():
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
-    time.sleep(.1)
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
     print('Click.')
 
@@ -88,11 +104,11 @@ def resetGame():
     time.sleep(.1)
 
 def getRGBSum(side,layer,im):
-    if side == 'left':
+    if side == 1:  # 1 is left
         a = array(im.getpixel((leftPos,layer)))
         a = a.sum()
         return a
-    elif side == 'right':
+    elif side == 2:   # 2 is right
         b = array(im.getpixel((rightPos,layer)))
         b = b.sum()
         return b
@@ -100,49 +116,49 @@ def getRGBSum(side,layer,im):
         print("Invalid side")
         
 def isRed(a,b):
-    if ( a >= 260 and a <= 310 ) and ( b >= 220 and b <= 240 ):
+    if ( a > 250 and a < 320 ) and ( b > 210 and b < 250 ):
         return True
     else:
         return False
 
 def isWhite(a,b):
-    if (a >= 540 and a <= 555 ) and ( b >= 500 and b <= 520 ):
+    if (a > 530 and a < 565 ) and ( b > 490 and b < 530 ):
         return True
     else:
         return False
 
 def checkLayer(layer, im):
-    if layer == 'defaultRed':
-        a = getRGBSum('left',layerDefault,im)
-        b = getRGBSum('right',layerDefault,im)
+    if layer == 4:       # 4 is defaultRed
+        a = getRGBSum(1,layerDefault,im)
+        b = getRGBSum(2,layerDefault,im)
         if isRed(a,b):
             leftClick()
-            return 'red'
+            return 4
             
-    if layer == 'defaultWhite':
-        a = getRGBSum('left',layerDefault,im)
-        b = getRGBSum('right',layerDefault,im)
+    if layer == 5: # 5 is defaultWhite
+        a = getRGBSum(1,layerDefault,im)
+        b = getRGBSum(2,layerDefault,im)
         if isWhite(a,b):
             leftClick()
-            return 'white'
+            return 5
     
     if layer == 1:
-        a = getRGBSum('left',layer1,im)
-        b = getRGBSum('right',layer1,im)
+        a = getRGBSum(1,layer1,im)
+        b = getRGBSum(2,layer1,im)
         if isRed(a,b):
             leftClick()
             return 1
 
     if layer == 2:
-        a = getRGBSum('left',layer2,im)
-        b = getRGBSum('right',layer2,im)
+        a = getRGBSum(1,layer2,im)
+        b = getRGBSum(2,layer2,im)
         if isRed(a,b):
             leftClick()
             return 2
 
     if layer == 3:
-        a = getRGBSum('left',layer3,im)
-        b = getRGBSum('right',layer3,im)
+        a = getRGBSum(1,layer3,im)
+        b = getRGBSum(2,layer3,im)
         if isWhite(a,b):
             leftClick()
             return 3
@@ -150,15 +166,15 @@ def checkLayer(layer, im):
 def startGame():
     layer = 1
     while True:
-        print ("Running")
+        #print ("Running")
         im = screenGrab()
-        if layer == 'defaultRed':
-            if checkLayer(layer,im) == 'red':
-                layer = 'defaultWhite'
+        if layer == 4:
+            if checkLayer(layer,im) == 4:
+                layer = 5
                 
-        if layer == 'defaultWhite':
-            if checkLayer(layer,im) == 'white':
-                layer = 'defaultRed'
+        if layer == 5:
+            if checkLayer(layer,im) == 5:
+                layer = 4
                 
         if layer == 1:
             if checkLayer(layer,im) == 1:
@@ -170,10 +186,10 @@ def startGame():
                 
         if layer == 3:
             if checkLayer(layer,im) == 3:
-                layer == 'defaultRed'
+                layer == 4
 
 def main():
-    startGame()
+    pass
 
 if __name__ == '__main__':
     main()
